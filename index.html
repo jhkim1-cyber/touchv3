@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>터치</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --primary: #4F6EF7;
+  --primary-dark: #3D5AD9;
+  --primary-light: #EEF1FF;
+  --primary-gradient: linear-gradient(135deg, #4F6EF7, #7B95FF);
+  --red: #F24848;
+  --red-light: #FFF0F0;
+  --green: #00C37E;
+  --green-light: #E6FBF3;
+  --orange: #FF7A2F;
+  --text-main: #1A1A2E;
+  --text-mid: #4A4F6A;
+  --text-sub: #8A8FA8;
+  --border: #ECEEF5;
+  --bg: #F5F6FA;
+  --white: #FFFFFF;
+  --shadow-card: 0 2px 12px rgba(79, 110, 247, 0.07);
+  --shadow-btn: 0 4px 16px rgba(79, 110, 247, 0.3);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-spring: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body {
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #E8EAF0;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+}
+
+.app {
+  width: 100%;
+  max-width: 430px;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 0 40px rgba(0,0,0,0.15);
+}
+
+.screen { width: 100%; height: 100dvh; display: none; flex-direction: column; background: var(--bg); }
+.screen.active { display: flex; }
+
+.scroll-content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 80px;
+  scrollbar-width: none;
+}
+.scroll-content::-webkit-scrollbar { display: none; }
+
+.status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px 0;
+  font-size: 13px; font-weight: 600;
+  background: var(--white);
+  flex-shrink: 0;
+}
+.status-icons { display: flex; gap: 5px; align-items: center; }
+
+.top-nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px 14px; background: var(--white); flex-shrink: 0; }
+.top-nav-title { font-size: 16px; font-weight: 700; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px 14px; background: var(--white); flex-shrink: 0; }
+.topbar-title { font-size: 16px; font-weight: 700; }
+.topbar-title--lg { font-size: 17px; font-weight: 800; }
+
+.btn-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--bg); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background var(--transition-fast); }
+.btn-icon:active { background: var(--border); }
+.btn-icon--ghost { background: none; width: 32px; height: 32px; }
+
+.btn-primary { display: block; width: 100%; padding: 15px; background: var(--primary-gradient); color: white; font-size: 16px; font-weight: 800; border: none; border-radius: var(--radius-md); cursor: pointer; box-shadow: var(--shadow-btn); transition: opacity var(--transition-fast); font-family: inherit; }
+.btn-primary:active { opacity: 0.85; }
+
+.btn-outline { width: 100%; padding: 13px; background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-weight: 700; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: var(--shadow-card); transition: border-color var(--transition-fast); font-family: inherit; }
+.btn-outline:active { border-color: var(--primary); }
+
+.btn-detail { display: block; width: 100%; margin-top: 14px; padding: 12px; background: var(--primary-light); color: var(--primary); font-size: 14px; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; text-align: center; transition: background var(--transition-fast); font-family: inherit; }
+.btn-detail:active { background: #d5dcff; }
+
+.btn-tag { font-size: 13px; font-weight: 600; color: var(--text-sub); cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.btn-chip { font-size: 13px; font-weight: 700; color: var(--primary); background: white; border: 1.5px solid var(--primary); border-radius: var(--radius-xl); padding: 5px 14px; cursor: pointer; font-family: inherit; }
+
+.chevron { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: transform var(--transition-base); flex-shrink: 0; }
+.chevron svg { width: 14px; height: 14px; stroke: var(--text-sub); }
+.chevron--white { background: rgba(255,255,255,0.2); }
+.chevron--white svg { stroke: white; }
+.chevron--sm { width: 26px; height: 26px; }
+.chevron--sm svg { width: 13px; height: 13px; }
+.chevron.open { transform: rotate(180deg); }
+
+.logo { display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; flex-shrink: 0; text-align: center; line-height: 1.2; }
+.logo--md { width: 32px; height: 32px; border-radius: 10px; font-size: 10px; }
+.logo--lg { width: 36px; height: 36px; border-radius: 11px; font-size: 10px; }
+.logo--sm { width: 22px; height: 22px; border-radius: 7px; font-size: 6px; }
+.logo--stacked { border: 2px solid white; margin-right: -6px; position: relative; }
+.logo--baemin { background: #23CECE; }
+.logo--yogiyo { background: #FA2828; }
+.logo--coupang { background: #C00; font-size: 8px; }
+.logo--coupang.logo--sm { font-size: 5px; }
+
+.hero { background: var(--white); padding: 20px 20px 24px; position: relative; }
+.hero__label { font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+.hero__amount { font-size: 36px; font-weight: 800; color: var(--primary); letter-spacing: -1px; line-height: 1.1; }
+.hero__icon { position: absolute; right: 20px; top: 20px; width: 56px; height: 56px; background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+
+.section { padding: 16px 16px 0; }
+.section--gap { padding-top: 22px; }
+.section__title { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+.section__desc { font-size: 12px; color: var(--text-sub); margin-bottom: 14px; }
+
+.store-card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); margin-bottom: 12px; overflow: hidden; }
+.store-card--total { background: var(--primary-gradient); box-shadow: var(--shadow-btn); }
+.store-card__header { display: flex; justify-content: space-between; align-items: center; padding: 18px 18px 14px; cursor: pointer; user-select: none; }
+.store-card__name { font-size: 13px; color: var(--text-sub); margin-bottom: 3px; }
+.store-card__name--white { color: rgba(255,255,255,0.75); display: flex; align-items: center; gap: 6px; }
+.store-card__amount { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+.store-card__amount--white { color: white; }
+.store-card__header-right { display: flex; align-items: center; gap: 8px; }
+.store-card__logos { display: flex; }
+.store-card__body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.store-card__body.open { max-height: 700px; }
+.store-card__body-inner { padding: 0 18px 18px; }
+
+.badge-auto { font-size: 10px; background: rgba(255,255,255,0.25); color: white; padding: 2px 7px; border-radius: var(--radius-xl); font-weight: 700; }
+
+.linked-section { margin-bottom: 12px; }
+.linked-section__label { font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 8px; letter-spacing: 0.3px; }
+.linked-group { display: flex; flex-direction: column; gap: 10px; }
+.linked-row { display: flex; align-items: flex-start; gap: 8px; }
+.linked-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.tag { font-size: 12px; font-weight: 600; color: var(--text-main); background: var(--bg); padding: 3px 9px; border-radius: var(--radius-xl); }
+.tag--hidden { display: none; }
+.tag--more { font-size: 12px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 3px 9px; border-radius: var(--radius-xl); cursor: pointer; border: none; font-family: inherit; }
+
+.divider { height: 1px; background: var(--border); margin-bottom: 14px; }
+.divider--white { background: rgba(255,255,255,0.2); }
+.divider--mt { margin-top: 12px; }
+
+.platform-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; }
+.platform-row__left { display: flex; align-items: center; gap: 10px; }
+.platform-row__name { font-size: 14px; font-weight: 500; color: var(--text-mid); }
+.platform-row__name--white { color: rgba(255,255,255,0.9); }
+.platform-row__amount { font-size: 14px; font-weight: 700; }
+.platform-row__amount--white { color: white; }
+.platform-row__amount--muted { color: var(--text-sub); }
+
+.summary-rows { margin-top: 12px; }
+.summary-row { display: flex; justify-content: space-between; padding: 5px 0; }
+.summary-row--white { padding: 4px 0; }
+.s-label { font-size: 13px; color: var(--text-sub); }
+.s-label--white { color: rgba(255,255,255,0.7); }
+.s-label--cancel { color: rgba(255,180,180,0.9); }
+.s-label--red { color: var(--red); }
+.s-pos { font-size: 14px; font-weight: 700; }
+.s-pos--white { color: white; }
+.s-neg { font-size: 14px; font-weight: 700; color: var(--red); }
+.s-neg--white { color: rgba(255,180,180,1); }
+
+.add-store { border-radius: var(--radius-lg); margin-bottom: 12px; padding: 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 2px dashed var(--border); background: var(--white); transition: border-color var(--transition-fast); }
+.add-store:active { border-color: var(--primary); }
+.add-store__icon { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 20px; font-weight: 700; }
+.add-store__label { font-size: 14px; font-weight: 600; color: var(--primary); }
+
+.report-card { background: var(--white); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 10px; box-shadow: var(--shadow-card); display: flex; justify-content: space-between; align-items: center; }
+.report-card__type { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+.report-card__type svg { width: 14px; height: 14px; }
+.report-card__value { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+.report-card__value--down { color: var(--red); }
+.report-card__value--up { color: var(--green); }
+.report-card__compare { font-size: 12px; color: var(--text-sub); margin-top: 3px; }
+.report-card__arrow { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.report-card__arrow--down { background: var(--red-light); }
+.report-card__arrow--up { background: var(--green-light); }
+.report-card__arrow svg { width: 16px; height: 16px; }
+
+.notice-banner { background: var(--primary-gradient); border-radius: var(--radius-lg); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; cursor: pointer; }
+.notice-banner__label { font-size: 11px; color: rgba(255,255,255,0.75); margin-bottom: 3px; }
+.notice-banner__title { font-size: 14px; font-weight: 700; color: white; }
+.notice-banner__btn { background: white; color: var(--primary); font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: var(--radius-xl); border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; font-family: inherit; }
+
+.event-label { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.event-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.event-scroll::-webkit-scrollbar { display: none; }
+.event-chip { flex-shrink: 0; width: 72px; height: 72px; border-radius: 18px; position: relative; overflow: hidden; cursor: pointer; }
+.event-chip__inner { width: 100%; height: 100%; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; }
+.event-chip__inner--baemin { background: #23CECE; font-size: 14px; }
+.event-chip__inner--yogiyo { background: #FA2828; font-size: 22px; }
+.event-chip__inner--coupang { background: #C00; font-size: 11px; text-align: center; line-height: 1.3; }
+.event-badge { position: absolute; top: 4px; left: 4px; background: #FF5B5B; color: white; font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 6px; }
+
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--border); display: flex; padding: 10px 0 16px; z-index: 500; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; background: none; border: none; font-family: inherit; }
+.nav-item svg { width: 22px; height: 22px; stroke: var(--text-sub); fill: none; }
+.nav-item span { font-size: 11px; font-weight: 600; color: var(--text-sub); }
+.nav-item.active svg { stroke: var(--primary); }
+.nav-item.active span { color: var(--primary); }
+
+.date-bar { background: var(--white); padding: 10px 20px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.date-nav { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.date-nav svg { width: 14px; height: 14px; stroke: var(--text-mid); }
+.date-txt { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; flex: 1; }
+.date-txt .hl { color: var(--primary); }
+
+.tabs { display: flex; background: var(--bg); border-radius: var(--radius-xl); padding: 3px; gap: 0; }
+.tabs--lg { margin: 14px 16px 0; border-radius: 12px; padding: 4px; gap: 4px; }
+.tab-btn { padding: 5px 16px; border-radius: 17px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; transition: all 0.22s; background: transparent; color: var(--text-sub); font-family: inherit; }
+.tab-btn--lg { flex: 1; padding: 10px 0; border-radius: 9px; font-size: 14px; }
+.tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(79,110,247,0.3); }
+
+.group-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px 12px; background: var(--bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+.group-header__left { display: flex; align-items: center; gap: 8px; }
+.group-header__title { font-size: 15px; font-weight: 800; }
+.group-header__count { font-size: 13px; color: var(--text-sub); font-weight: 400; }
+.group-header__amount { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+.group-header__amount--green { color: var(--green); }
+.group-header__amount--red { color: var(--red); }
+.group-header__amount--orange { color: var(--orange); }
+
+.lp-section { background: var(--white); margin-bottom: 8px; }
+.lp-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; cursor: pointer; user-select: none; }
+.lp-header__left { display: flex; align-items: center; gap: 12px; }
+.lp-header__name { font-size: 15px; font-weight: 700; }
+.lp-header__right { display: flex; align-items: center; gap: 10px; }
+.lp-header__amount { font-size: 16px; font-weight: 800; }
+.lp-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.lp-body.open { max-height: 2000px; }
+
+.order-row { padding: 12px 20px 12px 64px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.order-row__name { font-size: 13px; font-weight: 600; margin-bottom: 3px; line-height: 1.4; }
+.order-row__meta { font-size: 11px; color: var(--text-sub); }
+.order-row__right { text-align: right; flex-shrink: 0; }
+.order-row__amount { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.order-row__amount--red { color: var(--red); }
+.order-status { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: var(--radius-sm); }
+.order-status--done { background: var(--green-light); color: var(--green); }
+.order-status--cancel { background: var(--red-light); color: var(--red); }
+.manual-icon { width: 36px; height: 36px; border-radius: 11px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.manual-icon svg { width: 18px; height: 18px; stroke: var(--primary); }
+
+.settle-bar { background: var(--white); padding: 16px 20px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.settle-bar__label { font-size: 14px; font-weight: 700; color: var(--text-mid); }
+.settle-bar__amount { font-size: 21px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+.settle-bar__amount span { font-size: 14px; }
+
+.month-summary { background: var(--white); margin: 12px 0 0; padding: 16px 20px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.month-summary__date { font-size: 11px; color: var(--text-sub); margin-bottom: 10px; }
+.month-row { display: flex; justify-content: space-between; align-items: center; }
+.month-row + .month-row { margin-top: 10px; }
+.month-row__label { font-size: 14px; font-weight: 700; }
+.month-row__label em { font-size: 12px; color: var(--text-sub); font-style: normal; font-weight: 400; margin-left: 3px; }
+.month-row__right { display: flex; align-items: center; gap: 8px; }
+.month-row__amount { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.month-row__amount--green { color: var(--green); }
+.month-row__amount--red { color: var(--red); }
+.btn-filter { width: 28px; height: 28px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-filter svg { width: 16px; height: 16px; stroke: var(--text-sub); }
+
+.platform-summary { background: var(--white); padding: 6px 20px 14px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+.approve-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; color: var(--text-sub); }
+
+.calendar-card { background: var(--white); padding: 16px 16px 4px; margin-bottom: 8px; }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 8px; }
+.cal-weekdays span { font-size: 12px; font-weight: 700; color: var(--text-sub); padding: 4px 0; }
+.cal-weekdays .sun { color: var(--red); }
+.cal-weekdays .sat { color: var(--primary); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-cell { display: flex; flex-direction: column; align-items: center; padding: 5px 2px 8px; cursor: pointer; border-radius: var(--radius-sm); transition: background var(--transition-fast); min-height: 52px; }
+.cal-cell:active { background: var(--primary-light); }
+.cal-day { font-size: 13px; font-weight: 600; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 3px; }
+.cal-day--today { background: var(--primary); color: white; }
+.cal-day--sunday { color: var(--red); }
+.cal-day--saturday { color: var(--primary); }
+.cal-day--other { color: var(--border); }
+.cal-day--highlight { background: #FFE8E8; color: var(--red); }
+.cal-amount { font-size: 10px; font-weight: 700; color: var(--text-sub); white-space: nowrap; }
+.cal-hint { font-size: 11px; color: var(--text-sub); padding: 12px 0 8px; }
+
+.bs-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600; transition: opacity var(--transition-base); opacity: 0; }
+.bs-overlay.visible { opacity: 1; }
+.bs-panel { display: none; position: fixed; bottom: 0; left: 0; right: 0; transform: translateY(100%); background: white; border-radius: 20px 20px 0 0; z-index: 601; padding: 24px 20px 36px; transition: transform var(--transition-spring); }
+.bs-panel.visible { transform: translateY(0); }
+.bs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.bs-title { font-size: 16px; font-weight: 800; }
+.bs-close { border: none; background: none; cursor: pointer; padding: 4px; }
+.bs-actions { display: flex; gap: 10px; margin-top: 22px; }
+.bs-actions .btn-secondary { flex: 1; padding: 14px; background: var(--bg); color: var(--text-mid); font-size: 15px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-family: inherit; }
+.bs-actions .btn-primary-sm { flex: 2; padding: 14px; background: var(--primary-gradient); color: white; font-size: 15px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(79,110,247,0.3); font-family: inherit; }
+
+.overlay-screen { display: none; position: fixed; inset: 0; z-index: 9000; background: var(--bg); font-family: inherit; flex-direction: column; }
+.overlay-screen.active { display: flex; }
+.overlay-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 90px; }
+
+.more-card { background: white; border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-card); }
+.more-card__header { display: flex; align-items: center; gap: 8px; padding: 16px 18px 12px; border-bottom: 1px solid var(--border); }
+.more-card__header svg { width: 18px; height: 18px; stroke: var(--primary); }
+.more-card__header span { font-size: 15px; font-weight: 800; }
+.more-card__item { padding: 15px 18px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-mid); cursor: pointer; }
+.more-card__item:last-child { border-bottom: none; }
+.more-card__item:active { background: var(--bg); }
+
+.profile-card { background: white; border-radius: var(--radius-lg); padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
+.profile-card__top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.profile-card__info { display: flex; align-items: center; gap: 12px; }
+.profile-card__avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+.profile-card__name { font-size: 17px; font-weight: 800; }
+.profile-card__badge { background: var(--primary-gradient); color: white; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: var(--radius-xl); }
+.profile-card__actions { display: flex; background: var(--primary-light); border-radius: 12px; overflow: hidden; }
+.profile-card__action { flex: 1; padding: 11px 0; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--primary); font-family: inherit; }
+.profile-card__action + .profile-card__action { border-left: 1px solid rgba(79,110,247,0.15); }
+
+.simple-card { background: white; border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-card); }
+.simple-card__row { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; cursor: pointer; }
+
+.manage-card { background: white; border-radius: var(--radius-lg); padding: 20px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
+.manage-card__header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.manage-card__title { font-size: 15px; font-weight: 800; }
+.manage-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; }
+.manage-row + .manage-row { border-top: 1px solid var(--border); }
+.manage-row__left { display: flex; align-items: center; gap: 10px; }
+.manage-row__icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.manage-row__icon--active { background: var(--primary-gradient); }
+.manage-row__icon--inactive { background: #F0F0F5; }
+.manage-row__name { font-size: 14px; font-weight: 700; }
+.manage-row__badge { font-size: 11px; font-weight: 600; color: var(--primary); }
+.manage-row__edit { border: none; background: var(--bg); color: var(--text-mid); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-xl); cursor: pointer; font-family: inherit; }
+
+.edit-bs { display: none; position: fixed; inset: 0; z-index: 10001; }
+.edit-bs__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+.edit-bs__panel { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 20px 20px 0 0; padding: 24px 20px 44px; }
+.edit-bs__input { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--text-main); outline: none; font-family: inherit; }
+.edit-bs__input:focus { border-color: var(--primary); }
+
+.platform-option { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--bg); border: none; border-radius: 12px; cursor: pointer; width: 100%; font-family: inherit; transition: background var(--transition-fast); }
+.platform-option:active { background: var(--border); }
+.platform-option__name { font-size: 14px; font-weight: 700; }
+
+.fixed-action { position: absolute; bottom: 66px; left: 0; right: 0; padding: 10px 16px; background: var(--white); border-top: 1px solid var(--border); z-index: 99; }
+
+.pl-section { padding: 16px 16px 0; }
+.pl-section__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.pl-section__title { font-size: 15px; font-weight: 800; }
+.pl-section__count { font-size: 12px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+.pl-section__add { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-light); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 16px; font-weight: 700; }
+
+.pl-store { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); margin-bottom: 10px; overflow: hidden; }
+.pl-store__header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; user-select: none; }
+.pl-store__left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.pl-store__name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+.pl-store__name-edit { width: 18px; height: 18px; border: none; background: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
+.pl-store__name-edit svg { width: 13px; height: 13px; stroke: var(--text-sub); }
+.pl-store__meta { font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.pl-store__meta-logos { display: flex; }
+.pl-store__actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.pl-store__delete { width: 24px; height: 24px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+.pl-store__delete svg { width: 16px; height: 16px; }
+.pl-store__body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.pl-store__body.open { max-height: 600px; }
+.pl-store__body-inner { padding: 0 16px 14px; }
+
+.pl-linked-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); }
+.pl-linked-row:first-child { border-top: none; }
+.pl-linked-row__left { display: flex; align-items: center; gap: 10px; }
+.pl-linked-row__name { font-size: 13px; font-weight: 600; }
+.pl-linked-row__manage { font-size: 12px; font-weight: 600; color: var(--text-sub); background: var(--bg); border: none; border-radius: 20px; padding: 4px 12px; cursor: pointer; font-family: inherit; }
+.pl-linked-row__manage:active { background: var(--border); }
+
+.pl-manual-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+.pl-manual-icon { width: 28px; height: 28px; border-radius: 8px; background: #F0F0F5; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--text-sub); }
+
+.pl-add-link { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--text-sub); background: none; border: 1px dashed var(--border); border-radius: var(--radius-sm); cursor: pointer; width: 100%; font-family: inherit; }
+.pl-add-link:active { background: var(--bg); }
+
+.pl-account { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--white); border-radius: var(--radius-md); margin-bottom: 8px; box-shadow: var(--shadow-card); cursor: pointer; }
+.pl-account__left { display: flex; align-items: center; gap: 12px; }
+.pl-account__info { min-width: 0; }
+.pl-account__name { font-size: 14px; font-weight: 700; }
+.pl-account__id { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+.pl-account__right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.pl-account__date { font-size: 11px; color: var(--text-sub); }
+
+.status-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.status-badge--active { background: var(--green-light); color: var(--green); }
+.status-badge--error { background: var(--red-light); color: var(--red); }
+
+.store-info-bs { padding: 0; }
+.store-info-bs__handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 16px; }
+.store-info-bs__content { padding: 0 20px 36px; }
+.store-info-bs__title { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; }
+.store-info-bs__platform { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.store-info-bs__platform-name { font-size: 20px; font-weight: 800; }
+.store-info-bs__field { margin-bottom: 16px; }
+.store-info-bs__field-label { font-size: 12px; color: var(--text-sub); font-weight: 600; margin-bottom: 4px; }
+.store-info-bs__field-value { font-size: 15px; font-weight: 700; }
+.share-setting { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.share-setting__label { font-size: 14px; font-weight: 700; }
+.toggle { width: 44px; height: 24px; border-radius: 12px; background: var(--border); border: none; cursor: pointer; position: relative; transition: background var(--transition-fast); flex-shrink: 0; }
+.toggle.active { background: var(--primary); }
+.toggle__knob { width: 20px; height: 20px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); position: absolute; top: 2px; left: 2px; transition: transform var(--transition-fast); }
+.toggle.active .toggle__knob { transform: translateX(20px); }
+.share-setting__hint { font-size: 12px; color: var(--red); margin-top: 4px; }
+.btn-disconnect { width: 100%; padding: 14px; margin-top: 16px; background: white; color: var(--red); font-size: 14px; font-weight: 700; border: 1.5px solid var(--red); border-radius: var(--radius-md); cursor: pointer; font-family: inherit; }
+.btn-disconnect:active { background: var(--red-light); }
+
+.account-check { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--white); border-radius: var(--radius-md); margin-bottom: 8px; box-shadow: var(--shadow-card); cursor: pointer; transition: border 0.15s; border: 2px solid transparent; }
+.account-check.selected { border-color: var(--primary); background: var(--primary-light); }
+.account-check__left { display: flex; align-items: center; gap: 12px; }
+.account-check__info { min-width: 0; }
+.account-check__name { font-size: 14px; font-weight: 700; }
+.account-check__id { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+.account-check__box { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.account-check.selected .account-check__box { background: var(--primary); border-color: var(--primary); }
+
+.text-red { color: var(--red) !important; }
+.text-primary { color: var(--primary) !important; }
+.text-green { color: var(--green) !important; }
+.text-muted { color: var(--text-sub) !important; }
+.fw-700 { font-weight: 700; }
+.mt-8 { margin-top: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.pb-20 { padding-bottom: 20px; }
+.spacer-80 { height: 80px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.anim { animation: fadeUp 0.35s ease both; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="screen-home">
+  <div class="status-bar">
+    <span>9:41 AM</span>
+    <span class="status-icons">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21.5" y="3.5" width="2" height="5" rx="1" opacity="0.4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.2"/></svg>
+    </span>
+  </div>
+  <div class="top-nav">
+    <h2 class="top-nav-title">박보검님 안녕하세요</h2>
+    <button class="btn-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A4F6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+    </button>
+  </div>
+  <div class="scroll-content">
+    <div class="section" style="padding-top:12px;">
+      <!-- 전체 합계 카드 -->
+      <div class="store-card store-card--total anim" style="animation-delay:.04s">
+        <div class="store-card__header" data-toggle="total">
+          <div>
+            <div class="store-card__name store-card__name--white">전체 이번달 매출</div>
+            <div class="store-card__amount store-card__amount--white" style="font-size:28px;letter-spacing:-1px;">23,829,820원</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-top:4px;">2026년 3월 1일 ~ 2026년 3월 19일</div>
+          </div>
+          <div class="chevron chevron--white open" id="ch-total">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+          </div>
+        </div>
+        <div class="store-card__body open" id="sb-total">
+          <div class="store-card__body-inner">
+            <div class="divider divider--white"></div>
+
+            <!-- 배민 -->
+            <div class="platform-row" style="cursor:pointer;" onclick="toggleTotalPlatform('baemin')">
+              <div class="platform-row__left"><div class="logo logo--md logo--baemin">배민</div><span class="platform-row__name platform-row__name--white">배달의 민족</span></div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="platform-row__amount platform-row__amount--white">11,250,000원</span>
+                <svg id="total-ch-baemin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" style="transition:transform 0.3s;flex-shrink:0;"><polyline points="18 15 12 9 6 15"/></svg>
+              </div>
+            </div>
+            <div id="total-body-baemin" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
+              <div style="display:flex;flex-direction:column;gap:4px;padding:6px 0 10px 42px;">
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">닭칼국수 청라점</span><span style="font-size:12px;font-weight:700;color:white;">4,200,000원</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">닭도리탕 청라점</span><span style="font-size:12px;font-weight:700;color:white;">3,150,000원</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">삼겹살 청라점</span><span style="font-size:12px;font-weight:700;color:white;">2,400,000원</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">삼겹살 인천점</span><span style="font-size:12px;font-weight:700;color:white;">1,500,000원</span></div>
+              </div>
+            </div>
+
+            <!-- 요기요 -->
+            <div class="platform-row" style="cursor:pointer;" onclick="toggleTotalPlatform('yogiyo')">
+              <div class="platform-row__left"><div class="logo logo--md logo--yogiyo">요기요</div><span class="platform-row__name platform-row__name--white">요기요</span></div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="platform-row__amount platform-row__amount--white">8,340,000원</span>
+                <svg id="total-ch-yogiyo" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" style="transition:transform 0.3s;flex-shrink:0;"><polyline points="18 15 12 9 6 15"/></svg>
+              </div>
+            </div>
+            <div id="total-body-yogiyo" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
+              <div style="display:flex;flex-direction:column;gap:4px;padding:6px 0 10px 42px;">
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">닭칼국수 청라점</span><span style="font-size:12px;font-weight:700;color:white;">3,800,000원</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">닭도리탕 청라점</span><span style="font-size:12px;font-weight:700;color:white;">2,540,000원</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">삼겹살 청라점</span><span style="font-size:12px;font-weight:700;color:white;">2,000,000원</span></div>
+              </div>
+            </div>
+
+            <!-- 쿠팡이츠 -->
+            <div class="platform-row" style="cursor:pointer;" onclick="toggleTotalPlatform('coupang')">
+              <div class="platform-row__left"><div class="logo logo--md logo--coupang">쿠팡eats</div><span class="platform-row__name platform-row__name--white">쿠팡이츠</span></div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="platform-row__amount platform-row__amount--white">4,239,820원</span>
+                <svg id="total-ch-coupang" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" style="transition:transform 0.3s;flex-shrink:0;"><polyline points="18 15 12 9 6 15"/></svg>
+              </div>
+            </div>
+            <div id="total-body-coupang" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
+              <div style="display:flex;flex-direction:column;gap:4px;padding:6px 0 10px 42px;">
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">닭칼국수 청라점</span><span style="font-size:12px;font-weight:700;color:white;">2,539,820원</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">삼겹살 인천점</span><span style="font-size:12px;font-weight:700;color:white;">1,700,000원</span></div>
+              </div>
+            </div>
+
+            <div class="divider divider--white divider--mt"></div>
+            <div class="summary-row summary-row--white"><span class="s-label s-label--white">승인 98건</span><span class="s-pos s-pos--white">23,829,820원</span></div>
+            <div class="summary-row summary-row--white"><span class="s-label s-label--cancel">취소 7건</span><span class="s-neg s-neg--white">-215,000원</span></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-outline mb-12" onclick="document.getElementById('report-section').scrollIntoView({behavior:'smooth'})">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        터치 리포트 보러가기
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <!-- 매장 카드 1 -->
+      <div class="store-card anim" style="animation-delay:.07s">
+        <div class="store-card__header" data-toggle="1">
+          <div><div class="store-card__name">터치 매장 1</div><div class="store-card__amount">1,453,520원</div></div>
+          <div class="store-card__header-right">
+            <div class="store-card__logos">
+              <div class="logo logo--sm logo--baemin logo--stacked" style="z-index:3">배민</div>
+              <div class="logo logo--sm logo--yogiyo logo--stacked" style="z-index:2">요기</div>
+              <div class="logo logo--sm logo--coupang logo--stacked" style="z-index:1">쿠팡</div>
+            </div>
+            <div class="chevron" id="ch-1"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div>
+          </div>
+        </div>
+        <div class="store-card__body" id="sb-1">
+          <div class="store-card__body-inner">
+            <div class="linked-section">
+              <div class="linked-section__label">연동 매장</div>
+              <div class="linked-group">
+                <div class="linked-row">
+                  <div class="logo logo--sm logo--baemin" style="margin-top:1px">배민</div>
+                  <div class="linked-tags" id="tags-1-baemin">
+                    <span class="tag">닭칼국수 청라점</span>
+                    <span class="tag">닭도리탕 청라점</span>
+                    <span class="tag tag--hidden" data-group="1-baemin">닭갈비 청라점</span>
+                    <span class="tag tag--hidden" data-group="1-baemin">닭볶음탕 청라점</span>
+                    <span class="tag tag--hidden" data-group="1-baemin">닭한마리 청라점</span>
+                    <button class="tag--more" data-toggle-tags="1-baemin">+3</button>
+                  </div>
+                </div>
+                <div class="linked-row">
+                  <div class="logo logo--sm logo--yogiyo" style="margin-top:1px">요기</div>
+                  <div class="linked-tags"><span class="tag">닭칼국수 청라점</span></div>
+                </div>
+                <div class="linked-row">
+                  <div class="logo logo--sm logo--coupang" style="margin-top:1px">쿠팡</div>
+                  <div class="linked-tags"><span class="tag">닭칼국수 청라점</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--baemin">배민</div><span class="platform-row__name">배달의 민족</span></div><span class="platform-row__amount">1,688,300원</span></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--yogiyo">요기요</div><span class="platform-row__name">요기요</span></div><span class="platform-row__amount">21,688,300원</span></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--coupang">쿠팡eats</div><span class="platform-row__name">쿠팡이츠</span></div><span class="platform-row__amount text-muted">0원</span></div>
+            <div class="summary-rows">
+              <div class="divider divider--mt"></div>
+              <div class="summary-row"><span class="s-label">승인 32건</span><span class="s-pos">1,382,500원</span></div>
+              <div class="summary-row"><span class="s-label s-label--red">취소 2건</span><span class="s-neg">-82,500원</span></div>
+            </div>
+            <button class="btn-detail" data-ledger="터치 매장 1">매출 상세보기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 매장 카드 2 -->
+      <div class="store-card anim" style="animation-delay:.13s">
+        <div class="store-card__header" data-toggle="2">
+          <div><div class="store-card__name">터치 매장 2</div><div class="store-card__amount">1,453,520원</div></div>
+          <div class="store-card__header-right">
+            <div class="store-card__logos">
+              <div class="logo logo--sm logo--baemin logo--stacked" style="z-index:2">배민</div>
+              <div class="logo logo--sm logo--yogiyo logo--stacked" style="z-index:1">요기</div>
+            </div>
+            <div class="chevron" id="ch-2"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div>
+          </div>
+        </div>
+        <div class="store-card__body" id="sb-2">
+          <div class="store-card__body-inner">
+            <div class="linked-section">
+              <div class="linked-section__label">연동 매장</div>
+              <div class="linked-group">
+                <div class="linked-row"><div class="logo logo--sm logo--baemin" style="margin-top:1px">배민</div><div class="linked-tags"><span class="tag">닭도리탕 청라점</span></div></div>
+                <div class="linked-row"><div class="logo logo--sm logo--yogiyo" style="margin-top:1px">요기</div><div class="linked-tags"><span class="tag">닭도리탕 청라점</span></div></div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--baemin">배민</div><span class="platform-row__name">배달의 민족</span></div><span class="platform-row__amount">920,000원</span></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--yogiyo">요기요</div><span class="platform-row__name">요기요</span></div><span class="platform-row__amount">533,520원</span></div>
+            <div class="summary-rows">
+              <div class="divider divider--mt"></div>
+              <div class="summary-row"><span class="s-label">승인 21건</span><span class="s-pos">1,480,000원</span></div>
+              <div class="summary-row"><span class="s-label s-label--red">취소 1건</span><span class="s-neg">-26,480원</span></div>
+            </div>
+            <button class="btn-detail" data-ledger="터치 매장 2">매출 상세보기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 매장 카드 3 -->
+      <div class="store-card anim" style="animation-delay:.19s">
+        <div class="store-card__header" data-toggle="3">
+          <div><div class="store-card__name">터치 매장 3</div><div class="store-card__amount">1,453,520원</div></div>
+          <div class="store-card__header-right">
+            <div class="store-card__logos">
+              <div class="logo logo--sm logo--baemin logo--stacked" style="z-index:3">배민</div>
+              <div class="logo logo--sm logo--yogiyo logo--stacked" style="z-index:2">요기</div>
+              <div class="logo logo--sm logo--coupang logo--stacked" style="z-index:1">쿠팡</div>
+            </div>
+            <div class="chevron" id="ch-3"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div>
+          </div>
+        </div>
+        <div class="store-card__body" id="sb-3">
+          <div class="store-card__body-inner">
+            <div class="linked-section">
+              <div class="linked-section__label">연동 매장</div>
+              <div class="linked-group">
+                <div class="linked-row"><div class="logo logo--sm logo--baemin" style="margin-top:1px">배민</div><div class="linked-tags"><span class="tag">삼겹살 청라점</span><span class="tag">삼겹살 인천점</span></div></div>
+                <div class="linked-row"><div class="logo logo--sm logo--yogiyo" style="margin-top:1px">요기</div><div class="linked-tags"><span class="tag">삼겹살 청라점</span></div></div>
+                <div class="linked-row"><div class="logo logo--sm logo--coupang" style="margin-top:1px">쿠팡</div><div class="linked-tags"><span class="tag">삼겹살 인천점</span></div></div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--baemin">배민</div><span class="platform-row__name">배달의 민족</span></div><span class="platform-row__amount">820,000원</span></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--yogiyo">요기요</div><span class="platform-row__name">요기요</span></div><span class="platform-row__amount">433,520원</span></div>
+            <div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--coupang">쿠팡eats</div><span class="platform-row__name">쿠팡이츠</span></div><span class="platform-row__amount">200,000원</span></div>
+            <div class="summary-rows">
+              <div class="divider divider--mt"></div>
+              <div class="summary-row"><span class="s-label">승인 45건</span><span class="s-pos">1,500,000원</span></div>
+              <div class="summary-row"><span class="s-label s-label--red">취소 3건</span><span class="s-neg">-46,480원</span></div>
+            </div>
+            <button class="btn-detail" data-ledger="터치 매장 3">매출 상세보기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-store anim" style="animation-delay:.23s" data-action="open-add-store">
+        <div class="add-store__icon">+</div>
+        <div class="add-store__label">터치 매장 만들러가기</div>
+      </div>
+    </div>
+
+    <!-- 리포트 -->
+    <div class="section section--gap" id="report-section">
+      <div class="section__title">터치 리포트</div>
+      <div class="section__desc">사장님을 위한 터치만의 알고리즘으로 리포트를 제공합니다.</div>
+      <div class="report-card"><div><div class="report-card__type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>총 매출 ⓘ</div><div class="report-card__value report-card__value--down">-1,235,000 (-38.4%)</div><div class="report-card__compare">전전날 1월 21일보다 매출이 줄었어요</div></div><div class="report-card__arrow report-card__arrow--down"><svg viewBox="0 0 24 24" fill="none" stroke="#F24848" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div></div>
+      <div class="report-card"><div><div class="report-card__type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>주문 수 ⓘ</div><div class="report-card__value report-card__value--up">+1,235,000 (+38.4%)</div><div class="report-card__compare">전전날 1월 21일보다 주문이 늘었어요</div></div><div class="report-card__arrow report-card__arrow--up"><svg viewBox="0 0 24 24" fill="none" stroke="#00C37E" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div></div>
+      <div class="report-card"><div><div class="report-card__type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>평균 주문금액 ⓘ</div><div class="report-card__value report-card__value--down">-1,235,000 (-38.4%)</div><div class="report-card__compare">전전날 1월 21일보다 매출이 줄었어요</div></div><div class="report-card__arrow report-card__arrow--down"><svg viewBox="0 0 24 24" fill="none" stroke="#F24848" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div></div>
+      <div class="report-card"><div><div class="report-card__type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>취소율 ⓘ</div><div class="report-card__value report-card__value--down">-1,235,000 (-38.4%)</div><div class="report-card__compare">전전날 1월 21일보다 매출이 줄었어요</div></div><div class="report-card__arrow report-card__arrow--down"><svg viewBox="0 0 24 24" fill="none" stroke="#F24848" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div></div>
+    </div>
+
+    <div class="section">
+      <div class="notice-banner">
+        <div><div class="notice-banner__label">공지사항</div><div class="notice-banner__title">이번달 터치 공지사항이 도착했어요!</div></div>
+        <button class="notice-banner__btn">바로가기</button>
+      </div>
+    </div>
+
+    <div class="section pb-20">
+      <div class="event-label">이벤트 광장</div>
+      <div class="section__desc">모든 플랫폼 이벤트, 터치에서 한번에 확인하세요!</div>
+      <div class="event-scroll">
+        <div class="event-chip"><div class="event-chip__inner event-chip__inner--baemin">배민</div><div class="event-badge">EVENT</div></div>
+        <div class="event-chip"><div class="event-chip__inner event-chip__inner--yogiyo">요기요</div></div>
+        <div class="event-chip"><div class="event-chip__inner event-chip__inner--coupang">coupang<br>eats</div></div>
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav" id="nav-home"></nav>
+</div>
+
+<!-- LEDGER SCREEN -->
+<div class="screen" id="screen-ledger">
+  <div class="status-bar"><span>9:41 AM</span><span class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21.5" y="3.5" width="2" height="5" rx="1" opacity="0.4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.2"/></svg></span></div>
+  <div class="topbar">
+    <button class="btn-icon btn-icon--ghost" data-action="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title" id="ledger-title">터치 매장 1 장부</div>
+    <button class="btn-tag" data-action="change-store">매장변경</button>
+  </div>
+  <div class="date-bar">
+    <button class="date-nav"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="date-txt" id="ledger-date-txt">2026년 <span class="hl">2월</span></div>
+    <button class="date-nav"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <div class="tabs">
+      <button class="tab-btn active" data-period="day">하루</button>
+      <button class="tab-btn" data-period="month">한달</button>
+    </div>
+  </div>
+  <div class="scroll-content" id="ledger-scroll">
+    <!-- DAY VIEW -->
+    <div id="view-day">
+      <div class="group-header"><div class="group-header__left"><span class="group-header__title">매출</span><span class="group-header__count">(1,416건)</span></div><div class="group-header__amount group-header__amount--green">+42,703,500원</div></div>
+      <div class="lp-section"><div class="lp-header" data-lp="1"><div class="lp-header__left"><div class="logo logo--lg logo--baemin">배민</div><div class="lp-header__name">배달의 민족</div></div><div class="lp-header__right"><div class="lp-header__amount">1,688,300원</div><div class="chevron chevron--sm open" id="lch-1"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div></div></div><div class="lp-body open" id="lb-1"><div class="order-row"><div><div class="order-row__name">[바싹한 등심 탕수육] 짜장 세트 외 1건</div><div class="order-row__meta">26/01/01 11:38:15 결제</div></div><div class="order-row__right"><div class="order-row__amount">18,000원</div><span class="order-status order-status--done">배달 완료</span></div></div><div class="order-row"><div><div class="order-row__name">[바싹한 등심 탕수육] 짜장 세트 외 1건</div><div class="order-row__meta">26/01/01 11:38:15 결제</div></div><div class="order-row__right"><div class="order-row__amount">28,000원</div><span class="order-status order-status--done">배달 완료</span></div></div></div></div>
+      <div class="lp-section"><div class="lp-header" data-lp="2"><div class="lp-header__left"><div class="logo logo--lg logo--yogiyo">요기요</div><div class="lp-header__name">요기요</div></div><div class="lp-header__right"><div class="lp-header__amount">1,688,300원</div><div class="chevron chevron--sm" id="lch-2"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div></div></div><div class="lp-body" id="lb-2"><div class="order-row"><div><div class="order-row__name">[바싹한 등심 탕수육] 짜장 세트 외 1건</div><div class="order-row__meta">26/01/01 11:38:15 결제</div></div><div class="order-row__right"><div class="order-row__amount">18,000원</div></div></div></div></div>
+      <div class="lp-section"><div class="lp-header" data-lp="3"><div class="lp-header__left"><div class="logo logo--lg logo--coupang">쿠팡eats</div><div class="lp-header__name">쿠팡이츠</div></div><div class="lp-header__right"><div class="lp-header__amount">1,688,300원</div><div class="chevron chevron--sm" id="lch-3"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div></div></div><div class="lp-body" id="lb-3"><div class="order-row"><div><div class="order-row__name">쿠팡이츠 주문 외 1건</div><div class="order-row__meta">26/01/01 11:38:15 결제</div></div><div class="order-row__right"><div class="order-row__amount">32,000원</div><span class="order-status order-status--done">배달 완료</span></div></div></div></div>
+      <div class="group-header mt-8"><div class="group-header__left"><span class="group-header__title">매입</span><span class="group-header__count">(16건)</span></div><div class="group-header__amount group-header__amount--red">-42,703,500원</div></div>
+      <div class="lp-section"><div class="lp-header" data-lp="5"><div class="lp-header__left"><div class="manual-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="lp-header__name">수기 매입</div></div><div class="lp-header__right"><div class="lp-header__amount text-red">-545,000원</div><div class="chevron chevron--sm" id="lch-5"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div></div></div><div class="lp-body" id="lb-5"><div class="order-row"><div><div class="order-row__name">식자재 구입</div><div class="order-row__meta">26/01/01 직접 등록</div></div><div class="order-row__right"><div class="order-row__amount order-row__amount--red">-320,000원</div><span class="order-status order-status--cancel">매입</span></div></div></div></div>
+      <div class="group-header mt-8"><div class="group-header__left"><span class="group-header__title">정산</span><span class="group-header__count">(1,416건)</span></div><div class="group-header__amount group-header__amount--orange">2,703,500원</div></div>
+      <div class="lp-section"><div class="lp-header" data-lp="6"><div class="lp-header__left"><div class="logo logo--lg logo--baemin">배민</div><div class="lp-header__name">배달의 민족</div></div><div class="lp-header__right"><div class="lp-header__amount">1,688,300원</div><div class="chevron chevron--sm" id="lch-6"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div></div></div><div class="lp-body" id="lb-6"><div class="order-row"><div><div class="order-row__name">2026년 1월 1일 정산금액</div></div><div class="order-row__right"><div class="order-row__amount">18,000원</div></div></div></div></div>
+      <div class="settle-bar"><div class="settle-bar__label">당일 입금 예정 금액</div><div class="settle-bar__amount">42,703,500<span>원</span></div></div>
+      <div class="spacer-80"></div>
+    </div>
+    <!-- MONTH VIEW -->
+    <div id="view-month" style="display:none">
+      <div class="tabs tabs--lg">
+        <button class="tab-btn tab-btn--lg active" data-cal="sales">매출 캘린더</button>
+        <button class="tab-btn tab-btn--lg" data-cal="settle">정산 캘린더</button>
+      </div>
+      <div id="cal-content-sales">
+        <div class="month-summary">
+          <div class="month-summary__date">2026년 2월 1일 ~ 2026년 2월 28일</div>
+          <div class="month-row">
+            <span class="month-row__label" id="sales-label">월매출 <em>(1,416건)</em></span>
+            <div class="month-row__right">
+              <span class="month-row__amount month-row__amount--green" id="sales-amount">+42,703,500원</span>
+              <button class="btn-filter" onclick="toggleMonthCompare('sales')" id="sales-filter-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="month-row" style="margin-top:10px;">
+            <span class="month-row__label" id="purchase-label">월매입 <em>(16건)</em></span>
+            <div class="month-row__right">
+              <span class="month-row__amount month-row__amount--red" id="purchase-amount">-780,000원</span>
+              <button class="btn-filter" onclick="toggleMonthCompare('purchase')" id="purchase-filter-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="platform-summary"><div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--baemin">배민</div><span class="platform-row__name">배달의 민족</span></div><span class="platform-row__amount">1,688,300원</span></div><div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--yogiyo">요기요</div><span class="platform-row__name">요기요</span></div><span class="platform-row__amount">21,688,300원</span></div><div class="platform-row"><div class="platform-row__left"><div class="logo logo--md logo--coupang">쿠팡eats</div><span class="platform-row__name">쿠팡이츠</span></div><span class="platform-row__amount text-muted">0원</span></div><div class="divider divider--mt"></div><div class="approve-row"><span>승인 32건</span><span class="s-pos">1,382,500원</span></div><div class="approve-row"><span class="text-red">취소 2건</span><span class="s-neg">-82,500원</span></div></div>
+        <div class="calendar-card"><div class="cal-weekdays"><span class="sun">Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span class="sat">Sat</span></div><div class="cal-grid" id="cal-grid-sales"></div><div class="cal-hint">※ 날짜를 선택하시면 상세 매출 내역을 확인하실 수 있습니다</div></div>
+      </div>
+      <div id="cal-content-settle" style="display:none">
+        <div class="month-summary">
+          <div class="month-summary__date">2026년 2월 1일 ~ 2026년 2월 28일</div>
+          <div class="month-row">
+            <span class="month-row__label" id="settle-label">월 입금 <em>(1,416건)</em></span>
+            <div class="month-row__right">
+              <span class="month-row__amount month-row__amount--green" id="settle-amount">+42,703,500원</span>
+              <button class="btn-filter" onclick="toggleMonthCompare('settle')" id="settle-filter-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="calendar-card"><div class="cal-weekdays"><span class="sun">Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span class="sat">Sat</span></div><div class="cal-grid" id="cal-grid-settle"></div><div class="cal-hint">※ 날짜를 선택하시면 상세 정산 내역을 확인하실 수 있습니다</div></div>
+      </div>
+      <div class="spacer-80"></div>
+    </div>
+  </div>
+  <div class="fixed-action"><button class="btn-primary">수기 등록</button></div>
+  <nav class="bottom-nav" id="nav-ledger"></nav>
+</div>
+
+<!-- 달력 바텀시트 -->
+<div class="bs-overlay" id="cal-bs-overlay"></div>
+<div class="bs-panel" id="cal-bs" style="max-height:85vh;overflow-y:auto;">
+  <div class="bs-header"><div class="bs-title" id="cal-bs-title">매출 캘린더</div><button class="bs-close" data-close="cal-bs"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8FA8" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div id="cal-bs-date" style="font-size:14px;font-weight:600;color:var(--text-sub);margin-bottom:18px;"></div>
+
+  <!-- 총 매출 -->
+  <div style="background:var(--bg);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <span id="cal-bs-label" style="font-size:14px;font-weight:600;color:var(--text-mid);">총 매출 금액</span>
+    <span style="font-size:18px;font-weight:800;">1,382,500원</span>
+  </div>
+
+  <!-- 플랫폼별 매출 + 정산일 -->
+  <div id="cal-bs-platform-list" style="display:flex;flex-direction:column;gap:0;margin-bottom:20px;"></div>
+
+  <div class="bs-actions"><button class="btn-secondary" data-close="cal-bs">닫기</button><button class="btn-primary-sm" id="cal-bs-detail">상세보기</button></div>
+</div>
+
+<!-- 더보기 오버레이 -->
+<div class="overlay-screen" id="overlay-more">
+  <div class="status-bar"><span>9:41 AM</span><span class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21.5" y="3.5" width="2" height="5" rx="1" opacity="0.4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.2"/></svg></span></div>
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="btn-icon btn-icon--ghost" data-action="close-more"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title topbar-title--lg">더보기</div>
+    <button style="font-size:13px;font-weight:600;color:var(--text-sub);border:1px solid var(--border);background:white;padding:6px 14px;border-radius:var(--radius-xl);cursor:pointer;font-family:inherit;">로그아웃</button>
+  </div>
+  <div class="overlay-scroll">
+    <div class="profile-card">
+      <div class="profile-card__top">
+        <div class="profile-card__info">
+          <div class="profile-card__avatar"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8A8FA8" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="profile-card__name">박보검 사장님</div>
+        </div>
+        <div class="profile-card__badge">스탠다드 구독중</div>
+      </div>
+      <div class="profile-card__actions">
+        <button class="profile-card__action" data-action="store-manage"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>터치 매장 관리</button>
+        <button class="profile-card__action" data-action="platform-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>플랫폼 계정 관리</button>
+      </div>
+    </div>
+    <div class="more-card"><div class="more-card__header"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke-width="2"/></svg><span>고객지원</span></div><div class="more-card__item">공지사항</div><div class="more-card__item">자주 묻는 질문</div><div class="more-card__item">1:1 문의하기</div></div>
+    <div class="more-card"><div class="more-card__header"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><circle cx="12" cy="12" r="3" stroke-width="2"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14" stroke-width="2"/></svg><span>계정관리</span></div><div class="more-card__item">마이페이지</div><div class="more-card__item">알림설정</div><div class="more-card__item">결제 내역</div></div>
+    <div class="more-card"><div class="more-card__header"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke-width="2"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="2"/></svg><span>구독관리</span></div><div class="more-card__item">상품 구독</div><div class="more-card__item">나의 구독 관리</div></div>
+    <div class="simple-card"><div class="simple-card__row"><span style="font-size:14px;font-weight:600;color:var(--text-mid);">추천인 입력하기</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A8FA8" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+    <div class="simple-card"><div class="simple-card__row"><span style="font-size:14px;font-weight:600;color:var(--text-mid);">앱 버전 V 1.0</span><span style="font-size:14px;font-weight:600;color:var(--text-sub);">서비스 정책 ›</span></div></div>
+  </div>
+  <nav class="bottom-nav" id="nav-more"></nav>
+</div>
+
+<!-- 터치 매장 관리 오버레이 -->
+<div class="overlay-screen" id="overlay-store-manage">
+  <div class="status-bar"><span>9:41 AM</span><span class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21.5" y="3.5" width="2" height="5" rx="1" opacity="0.4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.2"/></svg></span></div>
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="btn-icon btn-icon--ghost" data-action="close-store-manage"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title topbar-title--lg">터치 매장 관리</div>
+    <div style="width:32px;"></div>
+  </div>
+  <div class="overlay-scroll" id="sm-scroll">
+    <div class="pl-section">
+      <div class="pl-section__header">
+        <div style="display:flex;align-items:center;"><span class="pl-section__title">나의 터치 매장</span><span class="pl-section__count" id="sm-store-count">3개</span></div>
+        <button class="pl-section__add" id="btn-add-store"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+      <div id="sm-store-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 매장 이름 편집 바텀시트 -->
+<div class="edit-bs" id="edit-bs">
+  <div class="edit-bs__backdrop" data-close="edit-bs"></div>
+  <div class="edit-bs__panel">
+    <div class="bs-header" style="margin-bottom:20px;"><div class="bs-title" id="edit-bs-title">매장 편집</div><button class="bs-close" data-close="edit-bs"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8FA8" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div style="margin-bottom:20px;"><div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px;">매장 이름</div><input id="edit-name-input" type="text" class="edit-bs__input"/></div>
+    <div style="display:flex;gap:10px;">
+      <button id="edit-delete-btn" style="flex:1;padding:14px;background:var(--red-light);color:var(--red);font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit;">삭제</button>
+      <button id="edit-save-btn" style="flex:2;padding:14px;background:var(--primary-gradient);color:white;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;box-shadow:0 4px 12px rgba(79,110,247,0.3);font-family:inherit;">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 매장 추가 오버레이 -->
+<div class="overlay-screen" id="overlay-add-store" style="z-index:10200;">
+  <div class="status-bar"><span>9:41 AM</span><span class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21.5" y="3.5" width="2" height="5" rx="1" opacity="0.4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.2"/></svg></span></div>
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="btn-icon btn-icon--ghost" data-action="close-add-store"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title topbar-title--lg">매장 추가</div>
+    <div style="width:32px;"></div>
+  </div>
+  <div class="overlay-scroll">
+    <div class="pl-section">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px;">매장 이름 <span style="color:var(--red);font-size:12px;">필수</span></div>
+      <input id="add-store-name" type="text" class="edit-bs__input" placeholder="매장 이름을 입력하세요"/>
+    </div>
+    <div class="pl-section" style="padding-top:20px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px;">플랫폼 계정 연동 <span style="color:var(--red);font-size:12px;">필수</span></div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">이 매장에 연동할 플랫폼 계정을 선택하세요</div>
+      <div id="add-store-accounts"></div>
+      <div style="margin-top:12px;"><button class="pl-add-link" data-action="platform-link-from-add"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>새 플랫폼 계정 추가하기</button></div>
+    </div>
+  </div>
+  <div style="padding:12px 16px 28px;background:var(--white);border-top:1px solid var(--border);"><button class="btn-primary" id="add-store-save-btn" disabled style="opacity:0.5;">매장 추가 완료</button></div>
+</div>
+
+<!-- 매장 내 연동 바텀시트 -->
+<div class="bs-overlay" id="store-info-overlay" style="z-index:10600;"></div>
+<div class="bs-panel store-info-bs" id="store-info-bs" style="z-index:10601;">
+  <div class="store-info-bs__handle"></div>
+  <div class="store-info-bs__content">
+    <div class="store-info-bs__title">매장 정보</div>
+    <div class="store-info-bs__platform" id="si-platform"></div>
+    <div class="store-info-bs__field"><div class="store-info-bs__field-label">매장명</div><div class="store-info-bs__field-value" id="si-store-name">삼고대</div></div>
+    <div class="store-info-bs__field"><div class="share-setting"><span class="share-setting__label">공유 설정</span><button class="toggle" id="si-share-toggle"><div class="toggle__knob"></div></button></div><div class="share-setting__hint">공유받은 매장은 설정을 변경할 수 없습니다</div></div>
+    <button class="btn-disconnect" id="si-disconnect">연동 해제</button>
+  </div>
+</div>
+
+<!-- 플랫폼 연동 관리 오버레이 -->
+<div class="overlay-screen" id="overlay-platform-link" style="z-index:10500;">
+  <div class="status-bar"><span>9:41 AM</span><span class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21.5" y="3.5" width="2" height="5" rx="1" opacity="0.4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.2"/></svg></span></div>
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="btn-icon btn-icon--ghost" data-action="close-platform-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title topbar-title--lg">플랫폼 연동 관리</div>
+    <div style="width:32px;"></div>
+  </div>
+  <div class="overlay-scroll">
+    <div class="pl-section">
+      <div class="pl-section__header"><div style="display:flex;align-items:center;"><span class="pl-section__title">연동된 플랫폼 계정</span><span class="pl-section__count" id="pl-account-count">4개</span></div><button class="pl-section__add" id="pl-add-account-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div>
+      <div id="pl-account-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 플랫폼 계정 추가 오버레이 -->
+<div class="overlay-screen" id="overlay-add-account" style="z-index:11000;">
+  <div class="status-bar"><span>9:41 AM</span><span class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21.5" y="3.5" width="2" height="5" rx="1" opacity="0.4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.2"/></svg></span></div>
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="btn-icon btn-icon--ghost" data-action="close-add-account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title topbar-title--lg">플랫폼 계정 추가</div>
+    <div style="width:32px;"></div>
+  </div>
+  <div class="overlay-scroll">
+    <div class="pl-section" id="add-acc-step1">
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px;">플랫폼 선택</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">연동할 플랫폼을 선택해주세요</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="account-check" data-pick-platform='{"platform":"배달의 민족","bg":"#23CECE","short":"배민","logoClass":"logo--baemin"}' id="pick-baemin"><div class="account-check__left"><div class="logo logo--lg logo--baemin">배민</div><div class="account-check__name">배달의 민족</div></div><div class="account-check__box"></div></button>
+        <button class="account-check" data-pick-platform='{"platform":"요기요","bg":"#FA2828","short":"요기요","logoClass":"logo--yogiyo"}' id="pick-yogiyo"><div class="account-check__left"><div class="logo logo--lg logo--yogiyo">요기요</div><div class="account-check__name">요기요</div></div><div class="account-check__box"></div></button>
+        <button class="account-check" data-pick-platform='{"platform":"쿠팡이츠","bg":"#C00","short":"쿠팡","logoClass":"logo--coupang"}' id="pick-coupang"><div class="account-check__left"><div class="logo logo--lg logo--coupang">쿠팡</div><div class="account-check__name">쿠팡이츠</div></div><div class="account-check__box"></div></button>
+      </div>
+    </div>
+    <div class="pl-section" id="add-acc-step2" style="display:none;padding-top:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;"><div class="logo logo--lg" id="add-acc-logo"></div><span style="font-size:16px;font-weight:800;" id="add-acc-platform-name"></span></div>
+      <div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px;">아이디</div><input id="add-acc-id" type="text" class="edit-bs__input" placeholder="플랫폼 아이디를 입력하세요"/></div>
+      <div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px;">비밀번호</div><input id="add-acc-pw" type="password" class="edit-bs__input" placeholder="플랫폼 비밀번호를 입력하세요"/></div>
+      <div style="background:var(--primary-light);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><div style="font-size:12px;color:var(--text-mid);line-height:1.5;">입력하신 계정 정보는 안전하게 암호화되어 저장되며, 매출 데이터 연동 목적으로만 사용됩니다.</div></div>
+    </div>
+  </div>
+  <div style="padding:12px 16px 28px;background:var(--white);border-top:1px solid var(--border);"><button class="btn-primary" id="add-acc-submit-btn" disabled style="opacity:0.5;">연동하기</button></div>
+</div>
+
+<!-- 매장에 플랫폼 연동 바텀시트 -->
+<div class="edit-bs" id="link-to-store-bs">
+  <div class="edit-bs__backdrop" data-close="link-to-store-bs"></div>
+  <div class="edit-bs__panel">
+    <div class="bs-header" style="margin-bottom:16px;"><div class="bs-title">매장에 플랫폼 연동</div><button class="bs-close" data-close="link-to-store-bs"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8FA8" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">연동할 플랫폼 계정을 선택하세요</div>
+    <div id="link-account-options" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</div>
+
+<!-- 매장 변경 바텀시트 -->
+<div class="bs-overlay" id="change-store-overlay" style="z-index:700;"></div>
+<div class="bs-panel" id="change-store-bs" style="z-index:701;">
+  <div class="bs-header">
+    <div class="bs-title">매장 선택</div>
+    <button class="bs-close" data-close-change-store><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8FA8" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;" id="change-store-list"></div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+const App = (() => {
+  const state = {
+    currentScreen: 'screen-home',
+    editingStoreId: null,
+    isNewStore: false,
+    smStores: [
+      { id: 1, name: '나의 터치매장', linked: [
+          { id: 101, platform: '배달의 민족', bg: '#23CECE', short: '배민', storeName: '삼고대', logoClass: 'logo--baemin' },
+          { id: 102, platform: '쿠팡이츠', bg: '#C00', short: '쿠팡', storeName: '삼고대', logoClass: 'logo--coupang' },
+          { id: 103, platform: '요기요', bg: '#FA2828', short: '요기', storeName: '삼고대', logoClass: 'logo--yogiyo' },
+        ], manual: [{ id: 201, name: '삼고대 (수기입력)' }] },
+      { id: 2, name: '콜패스', linked: [], manual: [] },
+      { id: 3, name: '터치 매장 1', linked: [], manual: [] }
+    ],
+    plAccounts: [
+      { id: 1, platform: '배달의 민족', bg: '#23CECE', short: '배민', logoClass: 'logo--baemin', accountId: 'rkdcls78', status: 'active', date: '2026.03.17' },
+      { id: 2, platform: '배달의 민족', bg: '#23CECE', short: '배민', logoClass: 'logo--baemin', accountId: 'test_baemin', status: 'error', date: '2026.02.20' },
+      { id: 3, platform: '쿠팡이츠', bg: '#C00', short: '쿠팡', logoClass: 'logo--coupang', accountId: 'test_coupang', status: 'error', date: '2026.12.20' },
+      { id: 4, platform: '요기요', bg: '#FA2828', short: '요기요', logoClass: 'logo--yogiyo', accountId: 'test_yogiyo', status: 'error', date: '2026.12.20' },
+    ],
+    selectedStoreInfo: null,
+    linkingStoreId: null,
+    selectedAccountIds: [],
+    addAccPlatform: null
+  };
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => document.querySelectorAll(sel);
+
+  const NAV_ITEMS = [
+    { id: '홈', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>' },
+    { id: '장부', icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' },
+    { id: '통계', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+    { id: '리뷰', icon: '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>' },
+    { id: '더보기', icon: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>' }
+  ];
+
+  function renderNavBars() {
+    $$('.bottom-nav').forEach(nav => {
+      const activeTab = nav.id === 'nav-home' ? '홈' : nav.id === 'nav-ledger' ? '장부' : '더보기';
+      nav.innerHTML = NAV_ITEMS.map(item => `
+        <button class="nav-item ${item.id === activeTab ? 'active' : ''}" data-nav="${item.id}">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+          <span>${item.id}</span>
+        </button>
+      `).join('');
+    });
+  }
+
+  function showScreen(id) {
+    $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+    $$('.overlay-screen').forEach(o => o.classList.remove('active'));
+  }
+
+  function navigateTo(tab) {
+    if (tab === '홈') {
+      showScreen('screen-home');
+    } else if (tab === '장부') {
+      $('#ledger-title').textContent = '터치 매장 1 장부';
+      $('#ledger-scroll').scrollTop = 0;
+      showScreen('screen-ledger');
+      switchPeriod('month');
+    } else if (tab === '더보기') {
+      showScreen('screen-home');
+      $('#overlay-more').classList.add('active');
+    } else {
+      alert('해당 화면은 개발 중입니다 😊');
+      return;
+    }
+    updateNavStates(tab);
+  }
+
+  function updateNavStates(tab) {
+    $$('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.nav === tab));
+  }
+
+  function goLedger(name) {
+    $('#ledger-title').textContent = name + ' 장부';
+    $('#ledger-scroll').scrollTop = 0;
+    showScreen('screen-ledger');
+    updateNavStates('장부');
+    switchPeriod('day');
+  }
+
+  function toggleAccordion(id) {
+    const body = $(`#sb-${id}`), ch = $(`#ch-${id}`);
+    if (body) body.classList.toggle('open');
+    if (ch) ch.classList.toggle('open');
+  }
+
+  function toggleLP(id) {
+    const body = $(`#lb-${id}`), ch = $(`#lch-${id}`);
+    if (body) body.classList.toggle('open');
+    if (ch) ch.classList.toggle('open');
+  }
+
+  function toggleTags(group, btn) {
+    const hidden = $$(`[data-group="${group}"]`);
+    const isHidden = hidden[0].style.display === 'none' || hidden[0].style.display === '';
+    hidden.forEach(el => el.style.display = isHidden ? 'inline-block' : 'none');
+    btn.textContent = isHidden ? '접기' : '+' + hidden.length;
+  }
+
+  function switchPeriod(mode) {
+    const isDay = mode === 'day';
+    $$('.date-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.period === mode));
+    $('#view-day').style.display = isDay ? '' : 'none';
+    $('#view-month').style.display = isDay ? 'none' : '';
+    $('#ledger-date-txt').innerHTML = isDay ? '2026년 <span class="hl">2월 2일</span>' : '2026년 <span class="hl">2월</span>';
+    if (!isDay) { switchCalTab('sales'); renderCalendar(2026, 2, 'sales'); }
+    $('#ledger-scroll').scrollTop = 0;
+  }
+
+  function switchCalTab(tab) {
+    $$('[data-cal]').forEach(b => b.classList.toggle('active', b.dataset.cal === tab));
+    $('#cal-content-sales').style.display = tab === 'sales' ? '' : 'none';
+    $('#cal-content-settle').style.display = tab === 'settle' ? '' : 'none';
+    renderCalendar(2026, 2, tab);
+  }
+
+  function renderCalendar(year, month, type) {
+    const grid = $(`#cal-grid-${type}`);
+    if (!grid) return;
+    grid.innerHTML = '';
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const prevDays = new Date(year, month - 1, 0).getDate();
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const cell = document.createElement('div'); cell.className = 'cal-cell';
+      cell.innerHTML = `<div class="cal-day cal-day--other">${prevDays - i}</div>`; grid.appendChild(cell);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = (firstDay + d - 1) % 7;
+      const cell = document.createElement('div'); cell.className = 'cal-cell';
+      let dayClass = 'cal-day';
+      if (dow === 0) dayClass += ' cal-day--sunday';
+      if (dow === 6) dayClass += ' cal-day--saturday';
+      if (d === 8 || d === 23) dayClass += ' cal-day--today';
+      if (d === 11) dayClass += ' cal-day--highlight';
+      const amount = d > 26 ? '' : '236만';
+      cell.innerHTML = `<div class="${dayClass}">${d}</div>${amount ? `<div class="cal-amount">${amount}</div>` : ''}`;
+      cell.addEventListener('click', () => openCalBS(d, month, year, type));
+      grid.appendChild(cell);
+    }
+    const total = firstDay + daysInMonth;
+    const rem = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for (let i = 1; i <= rem; i++) {
+      const cell = document.createElement('div'); cell.className = 'cal-cell';
+      cell.innerHTML = `<div class="cal-day cal-day--other">${i}</div>`; grid.appendChild(cell);
+    }
+  }
+
+  function openCalBS(day, month, year, type) {
+    const isSettle = type === 'settle';
+    $('#cal-bs-title').textContent = isSettle ? '정산 캘린더' : '매출 캘린더';
+    $('#cal-bs-date').textContent = `${year}년 ${month}월 ${day}일`;
+    $('#cal-bs-label').textContent = isSettle ? '총 입금 금액' : '총 매출 금액';
+
+    // 정산 캘린더에서는 플랫폼별 정산일 숨김
+    const platformList = $('#cal-bs-platform-list');
+    if (isSettle) {
+      platformList.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;"><div class="logo logo--md logo--baemin">배민</div><span style="font-size:14px;font-weight:500;color:var(--text-mid);">배달의 민족</span></div>
+          <span style="font-size:14px;font-weight:700;">1,688,300원</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;"><div class="logo logo--md logo--yogiyo">요기요</div><span style="font-size:14px;font-weight:500;color:var(--text-mid);">요기요</span></div>
+          <span style="font-size:14px;font-weight:700;">21,688,300원</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+          <div style="display:flex;align-items:center;gap:10px;"><div class="logo logo--md logo--coupang">쿠팡eats</div><span style="font-size:14px;font-weight:500;color:var(--text-mid);">쿠팡이츠</span></div>
+          <span style="font-size:14px;font-weight:700;color:var(--text-sub);">0원</span>
+        </div>`;
+    } else {
+      settleExpanded.baemin = false; settleExpanded.yogiyo = false; settleExpanded.coupang = false;
+      renderCalBsPlatforms();
+    }
+
+    const overlay = $('#cal-bs-overlay'), panel = $('#cal-bs');
+    overlay.style.display = 'block'; panel.style.display = 'block';
+    requestAnimationFrame(() => requestAnimationFrame(() => { overlay.classList.add('visible'); panel.classList.add('visible'); }));
+  }
+
+  function closeCalBS() {
+    const overlay = $('#cal-bs-overlay'), panel = $('#cal-bs');
+    overlay.classList.remove('visible'); panel.classList.remove('visible');
+    setTimeout(() => { overlay.style.display = 'none'; panel.style.display = 'none'; }, 350);
+  }
+
+  // 터치 매장 관리
+  function openStoreManage() { $('#overlay-store-manage').classList.add('active'); renderSMStores(); }
+
+  function renderSMStores() {
+    const el = $('#sm-store-list'); if (!el) return;
+    $('#sm-store-count').textContent = state.smStores.length + '개';
+    el.innerHTML = state.smStores.map(store => {
+      const logoHtml = store.linked.slice(0, 3).map((l, i) =>
+        `<div class="logo logo--sm ${l.logoClass} logo--stacked" style="z-index:${3-i};font-size:5px;">${l.short}</div>`).join('');
+      const linkedRows = store.linked.map(l => `
+        <div class="pl-linked-row">
+          <div class="pl-linked-row__left"><div class="logo logo--md ${l.logoClass}" style="font-size:8px;">${l.short}</div><span class="pl-linked-row__name">${l.storeName}</span></div>
+          <button class="pl-linked-row__manage" data-store-info='${JSON.stringify({platform:l.platform,bg:l.bg,short:l.short,logoClass:l.logoClass,storeName:l.storeName,linkedId:l.id,storeId:store.id})}'>관리</button>
+        </div>`).join('');
+      const manualRows = store.manual.map(m => `<div class="pl-manual-row"><div class="pl-manual-icon">M</div><span class="pl-linked-row__name">${m.name}</span></div>`).join('');
+      return `
+        <div class="pl-store">
+          <div class="pl-store__header" data-sm-toggle="${store.id}">
+            <div class="pl-store__left"><div>
+              <div class="pl-store__name">${store.name}
+                <button class="pl-store__name-edit" data-sm-edit="${store.id}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+              <div class="pl-store__meta">${logoHtml ? `<div class="pl-store__meta-logos">${logoHtml}</div>` : ''}<span>총 ${store.linked.length + store.manual.length}개</span></div>
+            </div></div>
+            <div class="pl-store__actions">
+              <button class="pl-store__delete" data-sm-delete="${store.id}"><svg viewBox="0 0 24 24" fill="none" stroke="#F24848" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+              <div class="chevron chevron--sm" id="sm-ch-${store.id}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg></div>
+            </div>
+          </div>
+          <div class="pl-store__body" id="sm-body-${store.id}">
+            <div class="pl-store__body-inner">
+              ${linkedRows}${manualRows}
+              <button class="pl-add-link" data-sm-add-link="${store.id}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                매장 연동하기
+              </button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function toggleSMStore(id) {
+    const body = $(`#sm-body-${id}`), ch = $(`#sm-ch-${id}`);
+    if (body) body.classList.toggle('open');
+    if (ch) ch.classList.toggle('open');
+  }
+
+  function editSMStore(id) {
+    state.editingStoreId = id; state.isNewStore = false;
+    const s = state.smStores.find(x => x.id === id); if (!s) return;
+    $('#edit-bs-title').textContent = s.name + ' 편집';
+    $('#edit-name-input').value = s.name;
+    $('#edit-delete-btn').style.display = '';
+    $('#edit-bs').style.display = 'block';
+  }
+
+  function openAddStore() {
+    state.selectedAccountIds = []; state.isNewStore = true; state.editingStoreId = null;
+    $('#add-store-name').value = '';
+    renderAddStoreAccounts(); updateAddStoreBtn();
+    $('#overlay-add-store').classList.add('active');
+  }
+
+  function updateAddStoreBtn() {
+    const ready = $('#add-store-name').value.trim().length > 0 && state.selectedAccountIds.length > 0;
+    const btn = $('#add-store-save-btn'); btn.disabled = !ready; btn.style.opacity = ready ? '1' : '0.5';
+  }
+
+  function renderAddStoreAccounts() {
+    const el = $('#add-store-accounts'); if (!el) return;
+    if (!state.plAccounts.length) { el.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--text-sub);">연동된 플랫폼 계정이 없습니다.</div>'; return; }
+    el.innerHTML = state.plAccounts.map(acc => `
+      <div class="account-check ${state.selectedAccountIds.includes(acc.id) ? 'selected' : ''}" data-select-account="${acc.id}">
+        <div class="account-check__left"><div class="logo logo--lg ${acc.logoClass}" style="font-size:9px;">${acc.short}</div><div class="account-check__info"><div class="account-check__name">${acc.platform}</div><div class="account-check__id">${acc.accountId}</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><span class="status-badge ${acc.status === 'active' ? 'status-badge--active' : 'status-badge--error'}">${acc.status === 'active' ? '연동중' : '연동 실패'}</span><div class="account-check__box">${state.selectedAccountIds.includes(acc.id) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div></div>
+      </div>`).join('');
+  }
+
+  function toggleAccountSelection(id) {
+    const idx = state.selectedAccountIds.indexOf(id);
+    if (idx === -1) state.selectedAccountIds.push(id); else state.selectedAccountIds.splice(idx, 1);
+    renderAddStoreAccounts(); updateAddStoreBtn();
+  }
+
+  function saveNewStore() {
+    const name = $('#add-store-name').value.trim(); if (!name || !state.selectedAccountIds.length) return;
+    const linked = state.selectedAccountIds.map(accId => {
+      const acc = state.plAccounts.find(a => a.id === accId); if (!acc) return null;
+      return { id: Date.now() + Math.random(), platform: acc.platform, bg: acc.bg, short: acc.short, storeName: name, logoClass: acc.logoClass };
+    }).filter(Boolean);
+    state.smStores.push({ id: Date.now(), name, linked, manual: [] });
+    $('#overlay-add-store').classList.remove('active'); renderSMStores();
+  }
+
+  function saveEditStore() {
+    const name = $('#edit-name-input').value.trim(); if (!name) return;
+    const s = state.smStores.find(x => x.id === state.editingStoreId); if (s) s.name = name;
+    $('#edit-bs').style.display = 'none'; renderSMStores();
+  }
+
+  function deleteStore() {
+    if (!confirm('매장을 삭제하시겠어요?')) return;
+    state.smStores = state.smStores.filter(x => x.id !== state.editingStoreId);
+    $('#edit-bs').style.display = 'none'; renderSMStores();
+  }
+
+  function deleteSMStore(id) {
+    if (!confirm('이 터치 매장을 삭제하시겠어요?')) return;
+    state.smStores = state.smStores.filter(x => x.id !== id); renderSMStores();
+  }
+
+  function openLinkToStore(storeId) {
+    state.linkingStoreId = storeId;
+    const el = $('#link-account-options');
+    const actives = state.plAccounts.filter(a => a.status === 'active');
+    el.innerHTML = actives.length ? actives.map(acc => `
+      <button class="platform-option" data-link-account='${JSON.stringify(acc)}'>
+        <div class="logo logo--lg ${acc.logoClass}" style="font-size:9px;">${acc.short}</div>
+        <div><div class="platform-option__name">${acc.platform}</div><div style="font-size:11px;color:var(--text-sub);">${acc.accountId}</div></div>
+      </button>`).join('') : '<div style="text-align:center;padding:20px;font-size:13px;color:var(--text-sub);">연동 가능한 계정이 없습니다.</div>';
+    $('#link-to-store-bs').style.display = 'block';
+  }
+
+  function linkAccountToStore(acc) {
+    const store = state.smStores.find(s => s.id === state.linkingStoreId); if (!store) return;
+    const storeName = prompt('이 매장에서 사용할 매장명을 입력하세요\n(예: 삼고대)');
+    if (!storeName || !storeName.trim()) return;
+    store.linked.push({ id: Date.now(), platform: acc.platform, bg: acc.bg, short: acc.short, storeName: storeName.trim(), logoClass: acc.logoClass });
+    $('#link-to-store-bs').style.display = 'none'; renderSMStores();
+  }
+
+  function openStoreInfoBS(info) {
+    state.selectedStoreInfo = info;
+    $('#si-platform').innerHTML = `<div class="logo logo--lg ${info.logoClass}" style="font-size:9px;">${info.short}</div><span style="font-size:20px;font-weight:800;margin-left:10px;">${info.platform}</span>`;
+    $('#si-store-name').textContent = info.storeName;
+    const overlay = $('#store-info-overlay'), panel = $('#store-info-bs');
+    overlay.style.display = 'block'; panel.style.display = 'block';
+    requestAnimationFrame(() => requestAnimationFrame(() => { overlay.classList.add('visible'); panel.classList.add('visible'); }));
+  }
+
+  function closeStoreInfoBS() {
+    const overlay = $('#store-info-overlay'), panel = $('#store-info-bs');
+    overlay.classList.remove('visible'); panel.classList.remove('visible');
+    setTimeout(() => { overlay.style.display = 'none'; panel.style.display = 'none'; }, 350);
+  }
+
+  function disconnectLinkedStore() {
+    if (!confirm('연동을 해제하시겠어요?')) return;
+    const info = state.selectedStoreInfo; if (!info) return;
+    const store = state.smStores.find(s => s.id === info.storeId);
+    if (store) store.linked = store.linked.filter(l => l.id !== info.linkedId);
+    closeStoreInfoBS(); renderSMStores();
+  }
+
+  // 플랫폼 연동 관리
+  function openPlatformLink() { $('#overlay-platform-link').classList.add('active'); renderPLAccounts(); }
+
+  function renderPLAccounts() {
+    const el = $('#pl-account-list'); if (!el) return;
+    $('#pl-account-count').textContent = state.plAccounts.length + '개';
+    el.innerHTML = state.plAccounts.length ? state.plAccounts.map(acc => `
+      <div class="pl-account">
+        <div class="pl-account__left"><div class="logo logo--lg ${acc.logoClass}" style="font-size:9px;">${acc.short}</div><div class="pl-account__info"><div class="pl-account__name">${acc.platform}</div><div class="pl-account__id">${acc.accountId}</div></div></div>
+        <div class="pl-account__right"><span class="status-badge ${acc.status === 'active' ? 'status-badge--active' : 'status-badge--error'}">${acc.status === 'active' ? '연동중' : '연동 실패'}</span><span class="pl-account__date">${acc.date}</span>
+          <button data-remove-account="${acc.id}" style="border:none;background:none;cursor:pointer;padding:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-sub)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+      </div>`).join('') : '<div style="text-align:center;padding:24px;font-size:13px;color:var(--text-sub);">연동된 플랫폼 계정이 없어요</div>';
+  }
+
+  function openAddAccountOverlay() {
+    state.addAccPlatform = null;
+    $('#add-acc-step1').style.display = '';
+    $('#add-acc-step2').style.display = 'none';
+    $$('[data-pick-platform]').forEach(el => { el.classList.remove('selected'); el.querySelector('.account-check__box').innerHTML = ''; });
+    $('#add-acc-id').value = ''; $('#add-acc-pw').value = '';
+    updateAddAccBtn();
+    $('#overlay-add-account').classList.add('active');
+  }
+
+  function closeAddAccountOverlay() {
+    $('#overlay-add-account').classList.remove('active');
+    if ($('#overlay-add-store').classList.contains('active')) { renderAddStoreAccounts(); updateAddStoreBtn(); }
+  }
+
+  function pickPlatform(el) {
+    const data = JSON.parse(el.dataset.pickPlatform); state.addAccPlatform = data;
+    $$('[data-pick-platform]').forEach(b => { b.classList.remove('selected'); b.querySelector('.account-check__box').innerHTML = ''; });
+    el.classList.add('selected');
+    el.querySelector('.account-check__box').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    $('#add-acc-step2').style.display = '';
+    const logo = $('#add-acc-logo'); logo.className = `logo logo--lg ${data.logoClass}`; logo.style.fontSize = '9px'; logo.textContent = data.short;
+    $('#add-acc-platform-name').textContent = data.platform;
+    updateAddAccBtn();
+  }
+
+  function updateAddAccBtn() {
+    const ready = !!state.addAccPlatform && $('#add-acc-id').value.trim().length > 0 && $('#add-acc-pw').value.trim().length > 0;
+    const btn = $('#add-acc-submit-btn'); btn.disabled = !ready; btn.style.opacity = ready ? '1' : '0.5';
+  }
+
+  function submitAddAccount() {
+    const data = state.addAccPlatform; if (!data) return;
+    const accountId = $('#add-acc-id').value.trim(); const pw = $('#add-acc-pw').value.trim();
+    if (!accountId || !pw) return;
+    const today = new Date(); const dateStr = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+    state.plAccounts.push({ id: Date.now(), platform: data.platform, bg: data.bg, short: data.short, logoClass: data.logoClass, accountId, status: 'active', date: dateStr });
+    closeAddAccountOverlay(); renderPLAccounts();
+  }
+
+  function removeAccount(id) {
+    if (!confirm('이 플랫폼 계정을 삭제하시겠어요?')) return;
+    state.plAccounts = state.plAccounts.filter(x => x.id !== id); renderPLAccounts();
+  }
+
+  function openChangeStoreBs() {
+    const list = $('#change-store-list');
+    const current = $('#ledger-title').textContent.replace(' 장부', '');
+    const storeNames = ['전체 매장', ...state.smStores.map(s => s.name)];
+    list.innerHTML = storeNames.map(name => `
+      <button data-select-store="${name}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${name === current ? 'var(--primary-light)' : 'var(--bg)'};border:1.5px solid ${name === current ? 'var(--primary)' : 'transparent'};border-radius:12px;cursor:pointer;font-family:inherit;width:100%;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:10px;background:${name === current ? 'linear-gradient(135deg,#4F6EF7,#7B95FF)' : '#E0E0E8'};display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${name === current ? 'white' : '#8A8FA8'}" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          </div>
+          <span style="font-size:14px;font-weight:700;color:${name === current ? 'var(--primary)' : 'var(--text-main)'};">${name}</span>
+        </div>
+        ${name === current ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </button>
+    `).join('');
+    const overlay = $('#change-store-overlay'), panel = $('#change-store-bs');
+    overlay.style.display = 'block'; panel.style.display = 'block';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      overlay.classList.add('visible'); panel.classList.add('visible');
+    }));
+  }
+
+  function closeChangeStoreBs() {
+    const overlay = $('#change-store-overlay'), panel = $('#change-store-bs');
+    overlay.classList.remove('visible'); panel.classList.remove('visible');
+    setTimeout(() => { overlay.style.display = 'none'; panel.style.display = 'none'; }, 350);
+  }
+
+  function initEvents() {
+    document.addEventListener('click', e => {
+      const navEl = e.target.closest('[data-nav]'); if (navEl) { navigateTo(navEl.dataset.nav); return; }
+      const changeStore = e.target.closest('[data-action="change-store"]'); if (changeStore) { openChangeStoreBs(); return; }
+      const closeChangeStore = e.target.closest('[data-close-change-store]'); if (closeChangeStore) { closeChangeStoreBs(); return; }
+      const selectStore = e.target.closest('[data-select-store]'); if (selectStore) { const name = selectStore.dataset.selectStore; $('#ledger-title').textContent = name === '전체 매장' ? '전체 매장 장부' : name + ' 장부'; closeChangeStoreBs(); return; }
+      const toggle = e.target.closest('[data-toggle]'); if (toggle) { toggleAccordion(toggle.dataset.toggle); return; }
+      const lp = e.target.closest('[data-lp]'); if (lp) { toggleLP(lp.dataset.lp); return; }
+      const tagBtn = e.target.closest('[data-toggle-tags]'); if (tagBtn) { toggleTags(tagBtn.dataset.toggleTags, tagBtn); return; }
+      const detailBtn = e.target.closest('[data-ledger]'); if (detailBtn) { goLedger(detailBtn.dataset.ledger); return; }
+      const backBtn = e.target.closest('[data-action="back"]'); if (backBtn) { showScreen('screen-home'); updateNavStates('홈'); return; }
+      const closeMore = e.target.closest('[data-action="close-more"]'); if (closeMore) { $('#overlay-more').classList.remove('active'); showScreen('screen-home'); updateNavStates('홈'); return; }
+      const storeManage = e.target.closest('[data-action="store-manage"]'); if (storeManage) { openStoreManage(); return; }
+      const closeStoreManage = e.target.closest('[data-action="close-store-manage"]'); if (closeStoreManage) { $('#overlay-store-manage').classList.remove('active'); return; }
+      const periodBtn = e.target.closest('[data-period]'); if (periodBtn) { switchPeriod(periodBtn.dataset.period); return; }
+      const calBtn = e.target.closest('[data-cal]'); if (calBtn) { switchCalTab(calBtn.dataset.cal); return; }
+      const closeBtn = e.target.closest('[data-close]'); if (closeBtn) { const id = closeBtn.dataset.close; if (id === 'cal-bs') closeCalBS(); else $(`#${id}`).style.display = 'none'; return; }
+      const smToggle = e.target.closest('[data-sm-toggle]'); if (smToggle && !e.target.closest('[data-sm-delete]') && !e.target.closest('[data-sm-edit]')) { toggleSMStore(Number(smToggle.dataset.smToggle)); return; }
+      const smEdit = e.target.closest('[data-sm-edit]'); if (smEdit) { e.stopPropagation(); editSMStore(Number(smEdit.dataset.smEdit)); return; }
+      const smDelete = e.target.closest('[data-sm-delete]'); if (smDelete) { e.stopPropagation(); deleteSMStore(Number(smDelete.dataset.smDelete)); return; }
+      const storeInfo = e.target.closest('[data-store-info]'); if (storeInfo) { openStoreInfoBS(JSON.parse(storeInfo.dataset.storeInfo)); return; }
+      const smAddLink = e.target.closest('[data-sm-add-link]'); if (smAddLink) { openLinkToStore(Number(smAddLink.dataset.smAddLink)); return; }
+      const linkAccount = e.target.closest('[data-link-account]'); if (linkAccount) { linkAccountToStore(JSON.parse(linkAccount.dataset.linkAccount)); return; }
+      const closeAddStore = e.target.closest('[data-action="close-add-store"]'); if (closeAddStore) { $('#overlay-add-store').classList.remove('active'); return; }
+      const openAddStoreBtn = e.target.closest('[data-action="open-add-store"]'); if (openAddStoreBtn) { openAddStore(); return; }
+      const selectAccount = e.target.closest('[data-select-account]'); if (selectAccount) { toggleAccountSelection(Number(selectAccount.dataset.selectAccount)); return; }
+      const plFromAdd = e.target.closest('[data-action="platform-link-from-add"]'); if (plFromAdd) { openAddAccountOverlay(); return; }
+      const closePL = e.target.closest('[data-action="close-platform-link"]'); if (closePL) { $('#overlay-platform-link').classList.remove('active'); return; }
+      const openPL = e.target.closest('[data-action="platform-link"]'); if (openPL) { openPlatformLink(); return; }
+      const closeAddAcc = e.target.closest('[data-action="close-add-account"]'); if (closeAddAcc) { closeAddAccountOverlay(); return; }
+      const pickPlat = e.target.closest('[data-pick-platform]'); if (pickPlat) { pickPlatform(pickPlat); return; }
+      const removeAcc = e.target.closest('[data-remove-account]'); if (removeAcc) { removeAccount(Number(removeAcc.dataset.removeAccount)); return; }
+    });
+
+    $('#cal-bs-overlay').addEventListener('click', closeCalBS);
+    $('#change-store-overlay').addEventListener('click', closeChangeStoreBs);
+    $('#cal-bs-detail').addEventListener('click', () => { closeCalBS(); switchPeriod('day'); });
+    $('#btn-add-store').addEventListener('click', openAddStore);
+    $('#edit-save-btn').addEventListener('click', saveEditStore);
+    $('#edit-delete-btn').addEventListener('click', deleteStore);
+    $('#add-store-save-btn').addEventListener('click', saveNewStore);
+    $('#add-store-name').addEventListener('input', updateAddStoreBtn);
+    $('#store-info-overlay').addEventListener('click', closeStoreInfoBS);
+    $('#si-disconnect').addEventListener('click', disconnectLinkedStore);
+    $('#si-share-toggle').addEventListener('click', function() { this.classList.toggle('active'); });
+    $('#pl-add-account-btn').addEventListener('click', openAddAccountOverlay);
+    $('#add-acc-submit-btn').addEventListener('click', submitAddAccount);
+    $('#add-acc-id').addEventListener('input', updateAddAccBtn);
+    $('#add-acc-pw').addEventListener('input', updateAddAccBtn);
+  }
+
+  function init() { renderNavBars(); initEvents(); }
+  return { init, toggleTotalPlatform };
+})();
+
+App.init();
+
+// 플랫폼별 정산일 데이터 (날짜별)
+// 실제로는 서버에서 받아오는 데이터 - 여기선 샘플
+const calSettleData = {
+  baemin: [
+    { storeName: '닭칼국수 청라점', amount: 842300, settleDate: '2026.03.17' },
+    { storeName: '닭도리탕 청라점', amount: 521000, settleDate: '2026.03.17' },
+    { storeName: '닭갈비 청라점',   amount: 198000, settleDate: '2026.03.18' },
+    { storeName: '삼겹살 청라점',   amount: 320000, settleDate: '2026.03.19' },
+    { storeName: '삼겹살 인천점',   amount: 445000, settleDate: '2026.03.20' },
+    { storeName: '닭볶음탕 청라점', amount: 267000, settleDate: '2026.03.20' },
+    { storeName: '닭한마리 청라점', amount: 95000,  settleDate: '2026.03.21' },
+    { storeName: '닭한마리 인천점', amount: 184000, settleDate: '2026.03.22' },
+    { storeName: '닭갈비 인천점',   amount: 312000, settleDate: '2026.03.23' },
+    { storeName: '삼겹살 부평점',   amount: 156000, settleDate: '2026.03.24' },
+  ],
+  yogiyo: [
+    { storeName: '닭칼국수 청라점', amount: 620000, settleDate: '2026.03.20' },
+    { storeName: '닭도리탕 청라점', amount: 340000, settleDate: '2026.03.20' },
+    { storeName: '삼겹살 청라점',   amount: 280000, settleDate: '2026.03.21' },
+    { storeName: '닭갈비 청라점',   amount: 175000, settleDate: '2026.03.22' },
+  ],
+  coupang: [
+    { storeName: '닭칼국수 청라점', amount: 510000, settleDate: '2026.03.18' },
+    { storeName: '삼겹살 인천점',   amount: 298000, settleDate: '2026.03.19' },
+  ]
+};
+
+const SHOW_LIMIT = 3;
+const settleExpanded = { baemin: false, yogiyo: false, coupang: false };
+
+function renderCalBsPlatforms() {
+  const el = document.getElementById('cal-bs-platform-list');
+  if (!el) return;
+
+  const platforms = [
+    { key: 'baemin',  label: '배달의 민족', logoClass: 'logo--baemin', short: '배민',   amount: '1,688,300원' },
+    { key: 'yogiyo',  label: '요기요',      logoClass: 'logo--yogiyo', short: '요기요', amount: '21,688,300원' },
+    { key: 'coupang', label: '쿠팡이츠',    logoClass: 'logo--coupang', short: '쿠팡eats', amount: '0원' },
+  ];
+
+  el.innerHTML = platforms.map((p, pi) => {
+    const items = calSettleData[p.key] || [];
+    const isLast = pi === platforms.length - 1;
+    const expanded = settleExpanded[p.key];
+    const visible = expanded ? items : items.slice(0, SHOW_LIMIT);
+    const hasMore = items.length > SHOW_LIMIT;
+
+    const settleRows = visible.map(item => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0 7px 44px;border-top:1px solid var(--border);">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-main);">${item.storeName}</div>
+          <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">정산일 ${item.settleDate}</div>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:var(--primary);">${item.amount.toLocaleString()}원</span>
+      </div>`).join('');
+
+    const moreBtn = hasMore ? `
+      <button onclick="toggleCalSettle('${p.key}')" style="width:100%;padding:8px;background:none;border:none;border-top:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text-sub);cursor:pointer;font-family:inherit;text-align:center;">
+        ${expanded ? '접기 ▲' : `+ ${items.length - SHOW_LIMIT}개 더보기`}
+      </button>` : '';
+
+    return `
+      <div style="border-bottom:${isLast ? 'none' : '1px solid var(--border)'};">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="logo logo--md ${p.logoClass}">${p.short}</div>
+            <span style="font-size:14px;font-weight:500;color:var(--text-mid);">${p.label}</span>
+          </div>
+          <span style="font-size:14px;font-weight:700;">${p.amount}</span>
+        </div>
+        ${settleRows}
+        ${moreBtn}
+      </div>`;
+  }).join('');
+}
+
+function toggleCalSettle(platformKey) {
+  settleExpanded[platformKey] = !settleExpanded[platformKey];
+  renderCalBsPlatforms();
+}
+
+function toggleTotalPlatform(id) {
+  const body = document.getElementById('total-body-' + id);
+  const ch = document.getElementById('total-ch-' + id);
+  const isOpen = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+  body.style.maxHeight = isOpen ? '0px' : '200px';
+  ch.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+function toggleMonthCompare(type) {
+  const configs = {
+    sales: {
+      label: document.getElementById('sales-label'),
+      amount: document.getElementById('sales-amount'),
+      btn: document.getElementById('sales-filter-btn'),
+      normal:  { label: '월매출 <em>(1,416건)</em>',        amount: '+42,703,500원', cls: 'month-row__amount--green' },
+      compare: { label: '일 매출 <em>(1,416건)</em>',        amount: '어제 대비 +235건 / +2,360,000원', cls: 'month-row__amount--green' }
+    },
+    purchase: {
+      label: document.getElementById('purchase-label'),
+      amount: document.getElementById('purchase-amount'),
+      btn: document.getElementById('purchase-filter-btn'),
+      normal:  { label: '월매입 <em>(16건)</em>',            amount: '-780,000원',    cls: 'month-row__amount--red' },
+      compare: { label: '일 매입 <em>(16건)</em>',            amount: '어제 대비 -235건 / -2,360,000원', cls: 'month-row__amount--red' }
+    },
+    settle: {
+      label: document.getElementById('settle-label'),
+      amount: document.getElementById('settle-amount'),
+      btn: document.getElementById('settle-filter-btn'),
+      normal:  { label: '월 입금 <em>(1,416건)</em>',        amount: '+42,703,500원', cls: 'month-row__amount--green' },
+      compare: { label: '일 입금 <em>(1,416건)</em>',        amount: '어제 대비 +198건 / +1,980,000원', cls: 'month-row__amount--green' }
+    }
+  };
+
+  const c = configs[type];
+  if (!c || !c.label) return;
+  const isCompare = c.btn.dataset.active === '1';
+  const data = isCompare ? c.normal : c.compare;
+
+  c.label.innerHTML = data.label;
+  c.amount.innerHTML = data.amount;
+  c.amount.className = 'month-row__amount ' + data.cls;
+  c.btn.dataset.active = isCompare ? '0' : '1';
+  c.btn.style.background = isCompare ? '' : 'var(--primary-light)';
+  c.btn.querySelector('svg').style.stroke = isCompare ? '' : 'var(--primary)';
+}
+</script>
+</body>
+</html>
